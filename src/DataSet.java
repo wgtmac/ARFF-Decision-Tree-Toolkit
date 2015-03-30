@@ -1,3 +1,9 @@
+/**
+ * Carnegie Mellon University
+ * MSIT - eBusiness Task 11
+ * @author Tian Zheng, Gang Wu
+ */
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

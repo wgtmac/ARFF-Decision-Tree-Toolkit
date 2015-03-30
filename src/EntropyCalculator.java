@@ -1,3 +1,9 @@
+/**
+ * Carnegie Mellon University
+ * MSIT - eBusiness Task 11
+ * @author Tian Zheng, Gang Wu
+ */
+
 import java.util.ArrayList;
 import java.util.HashSet;
 

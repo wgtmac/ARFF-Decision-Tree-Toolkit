@@ -1,3 +1,9 @@
+/**
+ * Carnegie Mellon University
+ * MSIT - eBusiness Task 11
+ * @author Gang Wu, Tian Zheng
+ */
+
 import java.util.HashSet;
 
 /**
