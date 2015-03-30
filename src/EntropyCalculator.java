@@ -170,7 +170,7 @@ public class EntropyCalculator {
 	
 	// To get log base 2 value
 	private double getLog(double x) {
-		return Math.log(x) / Math.log(2);
+		return x == 0.0 ? 0 : Math.log(x) / Math.log(2);
 	}
 	
 	public static void main(String[] args) {

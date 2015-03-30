@@ -107,6 +107,7 @@ public class DataSet {
         }
         
         this.objective = attributeList.get(attributeList.size() - 1);
+        attributeList.remove(this.objective);
     }
 
     @Override

@@ -4,7 +4,6 @@ import java.util.HashSet;
 
 
 public class DecisionTree {
-	@SuppressWarnings("unused")
 	private static class Node {
 		String attribute;		// attribute used to divide dataset
 		String value;		   // used only for real number
@@ -54,9 +53,11 @@ public class DecisionTree {
 			
 			return new Node("", value, bestDecision);
 		}
+		
+		EntropyCalculator calculator = new EntropyCalculator(dataSet);
 
 		// calculate entropy for objective in the entire dataset
-		double entropyObj = 26.88;		// calcEntropy(dataSet, dataSet.getObjective());
+		double entropyObj = calculator.getEntropy(dataSet.getObjective());
 		
 		String bestAttri = "";
 		double maxGainRatio = 0.0;
@@ -72,7 +73,6 @@ public class DecisionTree {
 			String tmpBestVar = "";
 			
 			if (dataSet.isAttriReal(attri)) {			// continuous
-				// sort attri
 				dataSet.sort(attri);
 				
 				// partition & find best partition
@@ -99,8 +99,9 @@ public class DecisionTree {
 					}
 					
 					if (attriChanged && objChanged) {
-						condEntropy = 1.1;		// calcEntropy(dataSet, attri, currAttri, dataSet.getObjective());
-						if ((entropyObj - condEntropy)> maxGain) {
+						condEntropy = calculator.getContinuousCondEntropy(attri, currAttri, dataSet.getObjective());	
+						
+						if ((entropyObj - condEntropy) > maxGain) {
 							maxGain = (entropyObj - condEntropy);
 							tmpBestVar = currAttri;
 							tmpBestCondEntropy = condEntropy;
@@ -111,12 +112,17 @@ public class DecisionTree {
 					prevAttri = currAttri;
 					prevObj = currObj;
 				}
-				varEntropy = 3.3;			// calcEntropy(dataSet, attri, tmpBestVar);
-				gainRatio = (entropyObj - tmpBestCondEntropy) / varEntropy 
-										- Math.log( (count - 1)/dataList.size() ) / Math.log(2.0);
+				
+				if (!tmpBestVar.equals("")) {
+					varEntropy = calculator.getContinuousEntropy(attri, tmpBestVar);
+					gainRatio = (entropyObj - tmpBestCondEntropy) / varEntropy - Math.log( (count - 1)/dataList.size() ) / Math.log(2.0);
+				} else {
+					gainRatio = 0.0;
+				}
+
 			} else {					// discrete
-				condEntropy = 2.2;		// calcEntropy(dataSet, attri, dataSet.getObjective());
-				varEntropy = 4.4;			// calcEntropy(dataSet, attri);
+				condEntropy = calculator.getCondEntropy(attri, dataSet.getObjective());
+				varEntropy = calculator.getEntropy(attri);
 				gainRatio = (entropyObj - condEntropy) / varEntropy;
 			}
 			
@@ -127,29 +133,90 @@ public class DecisionTree {
 			}
 		}
 		
+		
 		/**
 		 * Create node
 		 * */
+		if (maxGainRatio == 0.0) {
+			// maximum voting
+			String bestDecision = "";
+			int max = 0;
+			String obj = dataSet.getObjective();
+			HashMap<String, Integer> map = new HashMap<String, Integer>();
+			for (String attri : dataSet.getAttributeMap().get(dataSet.getObjective()).getValueSet()) {
+				map.put(attri, 0);
+			}
+			for (Data d : dataSet.getData()) {
+				map.put(d.getData(obj), map.get(d.getData(obj)) + 1);
+			}
+			for (String key : map.keySet()) {
+				if (map.get(key) > max) {
+					max = map.get(key);
+					bestDecision = key;
+				}
+			}
+			
+			return new Node("", value, bestDecision);
+		}
+		
 		Node head = new Node(bestAttri, value, null);
-		if (dataSet.isAttriReal(bestAttri)) {
+		if (bestAttri != null && !bestAttri.isEmpty() && dataSet.isAttriReal(bestAttri)) {
 			DataSet lSubset = dataSet.getSubSet(bestAttri, bestVar,  true, dataSet.getAttributeList());
-			head.children.put("left", buildSubTree(lSubset, dataSet.getAttributeList(), "left", depth + 1));
+			head.children.put("left", buildSubTree(lSubset, dataSet.getAttributeList(), bestVar, depth + 1));
 			DataSet rSubset = dataSet.getSubSet(bestAttri, bestVar, false, dataSet.getAttributeList());
-			head.children.put("right", buildSubTree(rSubset, dataSet.getAttributeList(), "right", depth + 1));
+			head.children.put("right", buildSubTree(rSubset, dataSet.getAttributeList(), bestVar, depth + 1));
 		} else {
 			ArrayList<String> subAttriList = (ArrayList<String>) dataSet.getAttributeList().clone();
 			subAttriList.remove(bestAttri);
 			for (String attriValue : dataSet.getAttributeMap().get(bestAttri).getValueSet()) {
 				DataSet subset = dataSet.getSubSet(bestAttri, attriValue, true, subAttriList);
-				head.children.put(attriValue, buildSubTree(subset,subAttriList, attriValue, depth + 1));
+				if (!subset.getData().isEmpty()) {
+					head.children.put(attriValue, buildSubTree(subset,subAttriList, attriValue, depth + 1));
+				}
 			}
 		}
 		
 		return head;
 	}
+	
+	public void print (Node root) {
+		printHelper(root, 0);
+	}
+	
+	private void printHelper (Node root, int depth) {
+		if (root != null) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < depth; ++i) {
+				sb.append("\t");
+			}
+			String tab = sb.toString();
+
+			for (String key : root.children.keySet()) {
+				Node child = root.children.get(key);
+
+				if ((key.equals("left") || key.equals("right"))) {
+					System.out.print(tab + root.attribute + (key.equals("left") ? " <= " : " > ") + child.value);
+				} else {
+					System.out.print(tab + root.attribute + " " + key);
+				}
+				if (child.children == null || child.children.isEmpty()) {
+					System.out.println(" [Decision : " + child.decision + "]");
+				} else {
+					System.out.println();
+					printHelper(child, depth + 1);
+				}
+			}
+		}
+	}
+	
+	
 
 	public static void main(String[] args) {
-		
+        DataSet data = new DataSet();
+        data.readDataFromFile("trainProdSelection.arff");
+        //System.out.println(data);
+        DecisionTree dt = new DecisionTree();
+        dt.print(dt.buildTree(data));
 	}
 
 }
