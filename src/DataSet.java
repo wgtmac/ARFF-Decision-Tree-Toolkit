@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class DataSet {
@@ -120,11 +122,38 @@ public class DataSet {
         return "DataSet [" +sb.toString() + "]";
     }
     
+    public void sort (String attri) {
+    	quick_sort(attri, 0, dataList.size() - 1);
+    }
+    
+    private void quick_sort (String attri, int low, int high) {
+    	if (low >= high) return;
+    	int i = low, j = high + 1;
+    	while (true) {
+    		while (Double.parseDouble(dataList.get(low).getData().get(attri)) > Double.parseDouble(dataList.get(++i).getData().get(attri))) {
+    			if (i == high) break;
+    		}
+    		while (Double.parseDouble(dataList.get(low).getData().get(attri)) < Double.parseDouble(dataList.get(--j).getData().get(attri))) {
+    			if (j == low) break;
+    		}
+    		if (i >= j) break;
+    		Data tmp = dataList.get(i);
+    		dataList.set(i, dataList.get(j));
+    		dataList.set(j, tmp);
+    	}
+		Data tmp = dataList.get(low);
+		dataList.set(low, dataList.get(j));
+		dataList.set(j, tmp);
+		quick_sort (attri, low, j - 1);
+		quick_sort (attri, j + 1, high);
+    }
+    
     public static void main(String[] args) {
         DataSet data = new DataSet();
         data.readDataFromFile("trainProdSelection.arff");
-        //System.out.println(data);
-        System.out.println(data.getSubSet("eCredit", "5", true, data.getAttributeList()));
+        data.sort("salary");
+        System.out.println(data);
+        //System.out.println(data.getSubSet("eCredit", "5", true, data.getAttributeList()));
     }
 
 }

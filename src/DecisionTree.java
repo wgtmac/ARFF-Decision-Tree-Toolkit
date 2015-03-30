@@ -4,6 +4,7 @@ import java.util.HashSet;
 
 
 public class DecisionTree {
+	@SuppressWarnings("unused")
 	private static class Node {
 		String attribute;		// attribute used to divide dataset
 		String value;		   // used only for real number
@@ -22,10 +23,10 @@ public class DecisionTree {
 	}
 		
 	public Node buildTree(DataSet dataSet) {
-		return null;
+		return buildSubTree(dataSet, dataSet.getAttributeList(), null, 0);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "unused" })
 	private Node buildSubTree (DataSet dataSet, ArrayList<String> attributeList, String value, int depth) {
 		HashSet<String> set = new HashSet<String>();
 		for (Data d : dataSet.getData()) {
@@ -72,6 +73,7 @@ public class DecisionTree {
 			
 			if (dataSet.isAttriReal(attri)) {			// continuous
 				// sort attri
+				dataSet.sort(attri);
 				
 				// partition & find best partition
 				double maxGain = 0.0;
