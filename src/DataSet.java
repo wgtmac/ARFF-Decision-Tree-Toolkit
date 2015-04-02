@@ -74,6 +74,40 @@ public class DataSet {
     	return subset;
     }
     
+    /**
+     * Split dataset for training set and test set
+     * @param int[] matrix, specify the method to select train data,
+     * for example, int[] matrix = { 1, 1, 1, 1, 0, 1, 1, 1, 1, 0 }
+     * It will select every 5th data for test, others will be used for building trees
+     * 
+     * @return DataSet: the targeted train/test dataset
+     * */
+    public DataSet getTrainSet (int[] matrix) {
+    	DataSet trainSet = new DataSet(this.relation, this.attributeMap, this.getAttributeList(), this.getObjective());
+    	int group = matrix.length;
+    	for (int i = 0; i < this.getData().size(); i += group) {
+    		for (int j = 0; j < group && (i * group + j) < this.getData().size(); ++j) {
+    			if (matrix[j] == 1) {
+    				trainSet.add(this.getData().get(i * group + j));
+    			}
+    		}
+    	}
+    	return trainSet;
+    }
+    
+    public DataSet getTestSet (int[] matrix) {
+    	DataSet testSet = new DataSet(this.relation, this.attributeMap, this.getAttributeList(), this.getObjective());
+    	int group = matrix.length;
+    	for (int i = 0; i < this.getData().size(); i += group) {
+    		for (int j = 0; j < group && (i * group + j) < this.getData().size(); ++j) {
+    			if (matrix[j] ==0) {
+    				testSet.add(this.getData().get(i * group + j));
+    			}
+    		}
+    	}
+    	return testSet;
+    }
+    
     public void add (Data d) {
     	dataList.add(d);
     }

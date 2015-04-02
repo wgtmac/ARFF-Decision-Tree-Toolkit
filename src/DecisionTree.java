@@ -42,7 +42,7 @@ public class DecisionTree {
             set.add(d.getData(dataSet.getObjective()));
         }
         
-        if (set.size() <= 1 || dataSet.size() <= 5 || depth >= 10) {
+        if (set.size() <= 1 || dataSet.size() <= 1 || depth >= 5) {
             // maximum voting
             String bestDecision = "";
             int max = 0;
@@ -88,7 +88,6 @@ public class DecisionTree {
                 // partition & find best partition
                 double maxGain = 0.0;
                 double tmpBestCondEntropy = 0.0;
-                int count = 1;
                 
                 ArrayList<Data> dataList = dataSet.getData();
                 boolean objChanged = false;
@@ -105,7 +104,6 @@ public class DecisionTree {
                     }
                     if (Double.parseDouble(currAttri) != Double.parseDouble(prevAttri)) {
                         attriChanged = true;
-                        count++;
                     }
                     
                     if (attriChanged && objChanged) {
@@ -125,7 +123,7 @@ public class DecisionTree {
                 
                 if (!tmpBestVar.equals("")) {
                     varEntropy = calculator.getContinuousEntropy(attri, tmpBestVar);
-                    gainRatio = (entropyObj - tmpBestCondEntropy) / varEntropy - Math.log( (count - 1)/dataList.size() ) / Math.log(2.0);
+                    gainRatio = (entropyObj - tmpBestCondEntropy) / varEntropy - 0.0;// Math.log( (count - 1)/dataList.size() ) / Math.log(2.0);
                 } else {
                     gainRatio = 0.0;
                 }
@@ -264,7 +262,12 @@ public class DecisionTree {
     			}
     		}
     	}
+    	//System.out.println("[Prediction: " + root.decision + " , Actual: " + data.getData(target));
     	return root == null ? false : root.decision.equals(data.getData(target));
+    }
+    
+    public void prune (DataSet dataSet, Node root) {
+    	
     }
     
     public static double accuracy (DataSet dataSet, Node root) {
@@ -277,19 +280,28 @@ public class DecisionTree {
         }
         return correct / total;
     }
-    
 
     public static void main(String[] args) {
-        DataSet trainData = new DataSet();
-        trainData.readDataFromFile("trainProdSelection.arff");   // ("trainProdIntro.binary.arff");
-        //System.out.println(data);
-        DecisionTree dt = new DecisionTree();
-        Node root = dt.buildTree(trainData);
-        //dt.print(root);
+//        DataSet trainData = new DataSet();
+//        trainData.readDataFromFile ("trainProdIntro.binary.arff");
+//        System.out.println(data);
+//        DecisionTree dt = new DecisionTree();
+//        Node root = dt.buildTree(trainData);
+//        dt.print(root);
+
+        DataSet dataSetA = new DataSet();
+        dataSetA.readDataFromFile ("trainProdSelection.arff");
+        DecisionTree dtA = new DecisionTree();
+        Node rootA = dtA.buildTree(dataSetA);
+        //dtA.print(rootA);
+        System.out.println("Task11(a)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetA, rootA) * 100));
         
-        DataSet testData = new DataSet();
-        testData.readDataFromFile("testProdSelection.arff"); // ("testProdIntro.binary.arff");
-        System.out.println("Accuracy : " + String.format("%.2f%%", accuracy(testData, root) * 100));
+        DataSet dataSetB = new DataSet();
+        dataSetB.readDataFromFile ("trainProdIntro.binary.arff"); 
+        DecisionTree dtB = new DecisionTree();
+        Node rootB = dtB.buildTree(dataSetB);
+        //dtB.print(rootB);
+        System.out.println("Task11(b)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetB, rootB) * 100));
         
     }
 
