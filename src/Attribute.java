@@ -13,8 +13,8 @@ public class Attribute {
     public enum Type { REAL, CLASS }
     
     private String name;            // Attribute name
-    private Type type;                // real number or several classes
-    private HashSet<String> valueSet;    // for classes, set of possible values
+    private Type type;                // real number or several discrete classes
+    private HashSet<String> valueSet;    // only for classes, set of all possible values
     
     public String getName() { return name; }
     public Type getType() {    return type;    }

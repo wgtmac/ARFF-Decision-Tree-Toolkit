@@ -7,6 +7,7 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 
 public class DecisionTree {
@@ -35,6 +36,29 @@ public class DecisionTree {
         return buildSubTree(dataSet, dataSet.getAttributeList(), null, 0);
     }
     
+    
+    private Node makeLeaf (DataSet dataSet, String value) {
+    	// maximum voting
+        String bestDecision = "";
+        int max = 0;
+        String obj = dataSet.getObjective();
+        HashMap<String, Integer> map = new HashMap<String, Integer>();
+        for (String attri : dataSet.getAttributeMap().get(dataSet.getObjective()).getValueSet()) {
+            map.put(attri, 0);
+        }
+        for (Data d : dataSet.getData()) {
+            map.put(d.getData(obj), map.get(d.getData(obj)) + 1);
+        }
+        for (String key : map.keySet()) {
+            if (map.get(key) > max) {
+                max = map.get(key);
+                bestDecision = key;
+            }
+        }
+        
+        return new Node("", value, bestDecision);
+    }
+    
     @SuppressWarnings("unchecked")
     private Node buildSubTree (DataSet dataSet, ArrayList<String> attributeList, String value, int depth) {
         HashSet<String> set = new HashSet<String>();
@@ -43,25 +67,7 @@ public class DecisionTree {
         }
         
         if (set.size() <= 1 || dataSet.size() <= 1 || depth >= 5) {
-            // maximum voting
-            String bestDecision = "";
-            int max = 0;
-            String obj = dataSet.getObjective();
-            HashMap<String, Integer> map = new HashMap<String, Integer>();
-            for (String attri : dataSet.getAttributeMap().get(dataSet.getObjective()).getValueSet()) {
-                map.put(attri, 0);
-            }
-            for (Data d : dataSet.getData()) {
-                map.put(d.getData(obj), map.get(d.getData(obj)) + 1);
-            }
-            for (String key : map.keySet()) {
-                if (map.get(key) > max) {
-                    max = map.get(key);
-                    bestDecision = key;
-                }
-            }
-            
-            return new Node("", value, bestDecision);
+            return makeLeaf (dataSet, value);
         }
         
         EntropyCalculator calculator = new EntropyCalculator(dataSet);
@@ -146,31 +152,14 @@ public class DecisionTree {
          * Create node
          * */
         if (maxGainRatio == 0.0) {
-            // maximum voting
-            String bestDecision = "";
-            int max = 0;
-            String obj = dataSet.getObjective();
-            HashMap<String, Integer> map = new HashMap<String, Integer>();
-            for (String attri : dataSet.getAttributeMap().get(dataSet.getObjective()).getValueSet()) {
-                map.put(attri, 0);
-            }
-            for (Data d : dataSet.getData()) {
-                map.put(d.getData(obj), map.get(d.getData(obj)) + 1);
-            }
-            for (String key : map.keySet()) {
-                if (map.get(key) > max) {
-                    max = map.get(key);
-                    bestDecision = key;
-                }
-            }
-            
-            return new Node("", value, bestDecision);
+        	return makeLeaf (dataSet, value);
         }
         
         Node head = new Node(bestAttri, value, null);
         if (bestAttri != null && !bestAttri.isEmpty() && dataSet.isAttriReal(bestAttri)) {
             DataSet lSubset = dataSet.getSubSet(bestAttri, bestVar,  true, dataSet.getAttributeList());
             head.children.put("left", buildSubTree(lSubset, dataSet.getAttributeList(), bestVar, depth + 1));
+            
             DataSet rSubset = dataSet.getSubSet(bestAttri, bestVar, false, dataSet.getAttributeList());
             head.children.put("right", buildSubTree(rSubset, dataSet.getAttributeList(), bestVar, depth + 1));
         } else {
@@ -187,11 +176,11 @@ public class DecisionTree {
         return head;
     }
     
-    public void print (Node root) {
+    public static void print (Node root) {
         printHelper(root, 0);
     }
     
-    private void printHelper (Node root, int depth) {
+    private static void printHelper (Node root, int depth) {
         if (root != null) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < depth; ++i) {
@@ -243,31 +232,40 @@ public class DecisionTree {
     
     public static boolean validation (Node root, Data data, String target) {
     	while (root != null && !root.isLeaf()) {
+    		boolean keyIsInTree = false;
     		for (String key : root.children.keySet()) {
     			if (key.equals("left")) {
     				if (Double.parseDouble(data.getData(root.attribute)) <=Double.parseDouble(root.children.get(key).value)) {
     					root = root.children.get(key);
+    					keyIsInTree = true;
     					break;
     				}
     			} else if (key.equals("right")) {
     				if (Double.parseDouble(data.getData(root.attribute)) > Double.parseDouble(root.children.get(key).value)) {
     					root = root.children.get(key);
+    					keyIsInTree = true;
     					break;
     				}
     			} else {
     				if (key.equals(data.getData(root.attribute))) {
     					root = root.children.get(key);
+    					keyIsInTree = true;
     					break;
     				}
     			}
     		}
+    		
+    		/**
+    		 * Here is an edge case: when training data doesn't a value of that attribute,
+    		 * but a test data comes with that missing value, it will get a wrong decision.
+    		 * This is the fault of training data, not mine. :) 
+    		 * */
+    		if (!keyIsInTree) {
+    			root = null;
+    		}
     	}
     	//System.out.println("[Prediction: " + root.decision + " , Actual: " + data.getData(target));
     	return root == null ? false : root.decision.equals(data.getData(target));
-    }
-    
-    public void prune (DataSet dataSet, Node root) {
-    	
     }
     
     public static double accuracy (DataSet dataSet, Node root) {
@@ -282,27 +280,19 @@ public class DecisionTree {
     }
 
     public static void main(String[] args) {
-//        DataSet trainData = new DataSet();
-//        trainData.readDataFromFile ("trainProdIntro.binary.arff");
-//        System.out.println(data);
-//        DecisionTree dt = new DecisionTree();
-//        Node root = dt.buildTree(trainData);
-//        dt.print(root);
-
         DataSet dataSetA = new DataSet();
         dataSetA.readDataFromFile ("trainProdSelection.arff");
         DecisionTree dtA = new DecisionTree();
         Node rootA = dtA.buildTree(dataSetA);
-        //dtA.print(rootA);
+        //DecisionTree.print(rootA);
         System.out.println("Task11(a)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetA, rootA) * 100));
         
         DataSet dataSetB = new DataSet();
         dataSetB.readDataFromFile ("trainProdIntro.binary.arff"); 
         DecisionTree dtB = new DecisionTree();
         Node rootB = dtB.buildTree(dataSetB);
-        //dtB.print(rootB);
+        //DecisionTree.print(rootB);
         System.out.println("Task11(b)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetB, rootB) * 100));
-        
     }
 
 }

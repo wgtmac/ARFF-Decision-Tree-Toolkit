@@ -85,7 +85,7 @@ public class DataSet {
     public DataSet getTrainSet (int[] matrix) {
     	DataSet trainSet = new DataSet(this.relation, this.attributeMap, this.getAttributeList(), this.getObjective());
     	int group = matrix.length;
-    	for (int i = 0; i < this.getData().size(); i += group) {
+    	for (int i = 0; i * group < this.getData().size(); ++i) {
     		for (int j = 0; j < group && (i * group + j) < this.getData().size(); ++j) {
     			if (matrix[j] == 1) {
     				trainSet.add(this.getData().get(i * group + j));
