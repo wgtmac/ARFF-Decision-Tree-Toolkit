@@ -1,4 +1,4 @@
-<b>Description</b>
+<b>Description</b><br>
     Java implementation of decision tree algorithm C4.5 based on arff files.
 
 <b>Authors: Steelers(Team 1)</b><br>
