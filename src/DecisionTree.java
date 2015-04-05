@@ -7,14 +7,13 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 
 
 public class DecisionTree {
     private static class Node {
-        String attribute;        // attribute used to divide dataset
-        String value;           // used only for real number
-        String decision;        // final decision
+        String attribute;      // attribute used to divide dataset
+        String value;          // used only for real number
+        String decision;       // final decision
         // @key
         // for class: attribute name
         // for real number: "left" (<= value), "right" (> value) 
@@ -28,7 +27,7 @@ public class DecisionTree {
         }
         
         public boolean isLeaf () {
-        	return children == null || children.isEmpty();
+            return children == null || children.isEmpty();
         }
     }
         
@@ -38,7 +37,7 @@ public class DecisionTree {
     
     
     private Node makeLeaf (DataSet dataSet, String value) {
-    	// maximum voting
+        // maximum voting
         String bestDecision = "";
         int max = 0;
         String obj = dataSet.getObjective();
@@ -152,7 +151,7 @@ public class DecisionTree {
          * Create node
          * */
         if (maxGainRatio == 0.0) {
-        	return makeLeaf (dataSet, value);
+            return makeLeaf (dataSet, value);
         }
         
         Node head = new Node(bestAttri, value, null);
@@ -207,92 +206,125 @@ public class DecisionTree {
     }
     
     public static String classification (Node root, Data data) {
-    	while (root != null && !root.isLeaf()) {
-    		for (String key : root.children.keySet()) {
-    			if (key.equals("left")) {
-    				if (Double.parseDouble(data.getData(root.attribute)) <=Double.parseDouble(root.children.get(key).value)) {
-    					root = root.children.get(key);
-    					break;
-    				}
-    			} else if (key.equals("right")) {
-    				if (Double.parseDouble(data.getData(root.attribute)) > Double.parseDouble(root.children.get(key).value)) {
-    					root = root.children.get(key);
-    					break;
-    				}
-    			} else {
-    				if (key.equals(data.getData(root.attribute))) {
-    					root = root.children.get(key);
-    					break;
-    				}
-    			}
-    		}
-    	}
-    	return root == null ? "" : root.decision;
+        while (root != null && !root.isLeaf()) {
+            for (String key : root.children.keySet()) {
+                if (key.equals("left")) {
+                    if (Double.parseDouble(data.getData(root.attribute)) <=Double.parseDouble(root.children.get(key).value)) {
+                        root = root.children.get(key);
+                        break;
+                    }
+                } else if (key.equals("right")) {
+                    if (Double.parseDouble(data.getData(root.attribute)) > Double.parseDouble(root.children.get(key).value)) {
+                        root = root.children.get(key);
+                        break;
+                    }
+                } else {
+                    if (key.equals(data.getData(root.attribute))) {
+                        root = root.children.get(key);
+                        break;
+                    }
+                }
+            }
+        }
+        return root == null ? "" : root.decision;
     }
     
     public static boolean validation (Node root, Data data, String target) {
-    	while (root != null && !root.isLeaf()) {
-    		boolean keyIsInTree = false;
-    		for (String key : root.children.keySet()) {
-    			if (key.equals("left")) {
-    				if (Double.parseDouble(data.getData(root.attribute)) <=Double.parseDouble(root.children.get(key).value)) {
-    					root = root.children.get(key);
-    					keyIsInTree = true;
-    					break;
-    				}
-    			} else if (key.equals("right")) {
-    				if (Double.parseDouble(data.getData(root.attribute)) > Double.parseDouble(root.children.get(key).value)) {
-    					root = root.children.get(key);
-    					keyIsInTree = true;
-    					break;
-    				}
-    			} else {
-    				if (key.equals(data.getData(root.attribute))) {
-    					root = root.children.get(key);
-    					keyIsInTree = true;
-    					break;
-    				}
-    			}
-    		}
-    		
-    		/**
-    		 * Here is an edge case: when training data doesn't a value of that attribute,
-    		 * but a test data comes with that missing value, it will get a wrong decision.
-    		 * This is the fault of training data, not mine. :) 
-    		 * */
-    		if (!keyIsInTree) {
-    			root = null;
-    		}
-    	}
-    	//System.out.println("[Prediction: " + root.decision + " , Actual: " + data.getData(target));
-    	return root == null ? false : root.decision.equals(data.getData(target));
+        while (root != null && !root.isLeaf()) {
+            boolean keyIsInTree = false;
+            for (String key : root.children.keySet()) {
+                if (key.equals("left")) {
+                    if (Double.parseDouble(data.getData(root.attribute)) <=Double.parseDouble(root.children.get(key).value)) {
+                        root = root.children.get(key);
+                        keyIsInTree = true;
+                        break;
+                    }
+                } else if (key.equals("right")) {
+                    if (Double.parseDouble(data.getData(root.attribute)) > Double.parseDouble(root.children.get(key).value)) {
+                        root = root.children.get(key);
+                        keyIsInTree = true;
+                        break;
+                    }
+                } else {
+                    if (key.equals(data.getData(root.attribute))) {
+                        root = root.children.get(key);
+                        keyIsInTree = true;
+                        break;
+                    }
+                }
+            }
+            
+            /**
+             * Here is an edge case: when training data doesn't a value of that attribute,
+             * but a test data comes with that missing value, it will get a wrong decision.
+             * This is the fault of training data, not mine. :) 
+             * */
+            if (!keyIsInTree) {
+                root = null;
+            }
+        }
+        //System.out.println("[Prediction: " + root.decision + " , Actual: " + data.getData(target));
+        //System.out.println(data + " Prediction: " + (root == null ? "Undecided": root.decision) + "\n");
+        return root == null ? false : root.decision.equals(data.getData(target));
     }
     
     public static double accuracy (DataSet dataSet, Node root) {
-    	double total = 0, correct = 0;
+        double total = 0, correct = 0;
         for (Data data : dataSet.getData()) {
-        	if (validation(root, data, dataSet.getObjective())){
-        		correct++;
-        	}
-        	total++;
+            if (validation(root, data, dataSet.getObjective())){
+                correct++;
+            }
+            total++;
         }
         return correct / total;
     }
 
     public static void main(String[] args) {
+        /**********************************************************
+         * task11(a)
+         * ********************************************************/
         DataSet dataSetA = new DataSet();
         dataSetA.readDataFromFile ("trainProdSelection.arff");
+        
+        // build tree
         DecisionTree dtA = new DecisionTree();
         Node rootA = dtA.buildTree(dataSetA);
-        //DecisionTree.print(rootA);
+        
+        // print tree
+        DecisionTree.print(rootA);
+        
+        // use entire train set to test accuracy (not cross validation)
         System.out.println("Task11(a)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetA, rootA) * 100));
         
+        // load test data
+        DataSet testDataSetA = new DataSet();
+        testDataSetA.readDataFromFile ("testProdSelection.arff");
+        
+        // show prediction
+        accuracy(testDataSetA, rootA);
+
+        /**********************************************************
+         * task11(b)
+         * ********************************************************/
         DataSet dataSetB = new DataSet();
         dataSetB.readDataFromFile ("trainProdIntro.binary.arff"); 
+        
+        // build tree
         DecisionTree dtB = new DecisionTree();
         Node rootB = dtB.buildTree(dataSetB);
-        //DecisionTree.print(rootB);
+        
+        // print tree
+        DecisionTree.print(rootB);
+
+        // use entire train set to test accuracy (not cross validation)
         System.out.println("Task11(b)'s accuracy : " + String.format("%.2f%%", accuracy(dataSetB, rootB) * 100));
+        
+        // load test data
+        DataSet testDataSetB = new DataSet();
+        testDataSetB.readDataFromFile ("testProdIntro.binary.arff");
+        
+        // show prediction
+        accuracy(testDataSetB, rootB);
     }
 
 }
