@@ -34,7 +34,9 @@ public class Main {
             DataSet trainSet = dataSet.getTrainSet(matrix[i]);
             DataSet testSet = dataSet.getTestSet(matrix[i]);
             DecisionTree dt = new DecisionTree();
-            accumulated_accuracy += DecisionTree.accuracy(testSet, dt.buildTree(trainSet));
+            double accuracy = DecisionTree.accuracy(testSet, dt.buildTree(trainSet));
+            accumulated_accuracy += accuracy;
+            System.out.println("Round " + i + String.format(" : %.2f%%", accuracy * 100));
         }
         
         return accumulated_accuracy / matrix.length;
@@ -52,7 +54,7 @@ public class Main {
                 k = Integer.valueOf(args[1]);
             }
             
-            System.out.println("Cross Validation Result : " + String.format("%.2f%%", crossValidation(dataSet, k, false) * 100));
+            System.out.println("Average Cross Validation Result : " + String.format("%.2f%%", crossValidation(dataSet, k, false) * 100));
         }
     }
 
