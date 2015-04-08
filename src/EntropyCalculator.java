@@ -16,7 +16,7 @@ public class EntropyCalculator {
     }
         
     /**
-     * Discrete stand alone Entropy, target or normal
+     * Discrete stand alone Entropy, target or normal - P(attribute)
      * @param attr the desired attribute
      * @return entropy of the attribute
      */
@@ -32,7 +32,7 @@ public class EntropyCalculator {
     
 
     /**
-     * Discrete conditional entropy
+     * Discrete conditional entropy - P(target|attribute)
      * @param attr the desired attribute
      * @param target the target attribute
      * @return attribute entropy at target
@@ -50,7 +50,7 @@ public class EntropyCalculator {
     }
     
     /**
-     * Continuous stand alone Entropy, target or normal
+     * Continuous stand alone Entropy, target or normal - P(attribute)
      * @param attr the desired attribute
      * @param cut the cut point for continuous value
      * @return entropy of the attribute
@@ -75,7 +75,7 @@ public class EntropyCalculator {
     }
     
     /**
-     * Continuous conditional entropy
+     * Continuous conditional entropy - P(target|attribute)
      * @param attr the desired attribute
      * @param cut the cut point for continuous value
      * @return entropy of the attribute
